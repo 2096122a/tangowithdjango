@@ -1,0 +1,13 @@
+{% extends 'rango/base.html' %}
+
+{% load staticfiles %}
+
+{% block title %}About{% endblock %}
+
+{% block body_block %}
+        <h1>Robin says...</h1>
+        Criminals Beware! <strong>{{ boldmessage }}</strong><br />
+        <img src="{% static "images/robin.jpg" %}" alt="Picture of me, as Robin" /> <!-- New line -->
+    {% endblock %}
+
+</html>
