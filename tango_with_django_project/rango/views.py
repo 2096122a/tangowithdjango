@@ -122,7 +122,7 @@ def index(request):
     if reset_last_visit_time:
         request.session['last_visit'] = str(datetime.now())
         request.session['visits'] = visits
-    context_dict['visits'] = visits
+        context_dict['visits'] = visits
 
 
     response = render(request,'rango/index.html', context_dict)
