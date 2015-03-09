@@ -8,29 +8,11 @@
     <br/>
 
     <div class="container">
-       <form class="form-signin span8" id="user_form" method="post" action="{% url 'profile_registration' %}">
-              enctype="multipart/form-data">
-            {% csrf_token %}
-            <h2 class="form-signin-heading">Update Profile Here</h2>
-            <!-- Display each form here -->
-
-            {% for field in user_form.visible_fields %}
-            {{ field.errors }}
-            {{ field.help_text}}<br/>
-            {{ field }}<br/>
-            {% endfor %}
-
-
-            {% for field in profile_form.visible_fields %}
-            {{ field.errors }}
-            {{ field.help_text}}<br/>
-            {{ field }}<br/>
-            {% endfor %}
-
-            <br/>
-            <!-- Provide a button to click to submit the form. -->
-            <input class="btn btn-primary" type="submit" name="submit" value="Submit"/>
-        </form>
+       <form method ="post" enctype ="multipart/form-data">
+		 {% csrf_token %}
+	{{ profile_form.as_p}}
+		<input type ="submit">
+	</form>
         
     </div>
 </div>

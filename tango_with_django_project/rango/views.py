@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from rango.models import Category
-from rango.models import Page
+from rango.models import Page, UserProfile
 from rango.forms import CategoryForm
 from rango.forms import PageForm
 from rango.forms import UserForm, UserProfileForm
@@ -12,6 +12,8 @@ from django.contrib.auth import logout
 from datetime import datetime
 from rango.bing_search import run_query
 from django.shortcuts import redirect
+from django.contrib.auth.models import User
+
 
 def track_url(request):
     page_id = None
@@ -53,80 +55,44 @@ def restricted(request):
     context_dict['cat_list'] = cat_list
     return render_to_response('rango/restricted.html', context_dict, context)
 
+@login_required
 def register_profile(request):
-    # Request the context.
-    #context = RequestContext(request)
-   # cat_list = get_category_list()
-    context_dict = {}
-    #context_dict['cat_list'] = cat_list
-    # Boolean telling us whether registration was successful or not.
-    # Initially False; presume it was a failure until proven otherwise!
-    registered = False
-
-    # If HTTP POST, we wish to process form data and create an account.
-    if request.method == 'POST':
-        # Grab raw form data - making use of both FormModels.
-        user_form = UserForm(data=request.POST)
-        profile_form = UserProfileForm(data=request.POST)
-
-        # Two valid forms?
-        if user_form.is_valid() and profile_form.is_valid():
-            # Save the user's form data. That one is easy.
-            user = user_form.save()
-
-            # Now a user account exists, we hash the password with the set_password() method.
-            # Then we can update the account with .save().
-            user.set_password(user.password)
-            user.save()
-
-            # Now we can sort out the UserProfile instance.
-            # We'll be setting values for the instance ourselves, so commit=False prevents Django from saving the instance automatically.
-            profile = profile_form.save(commit=False)
-            profile.user = user
-
-            # Profile picture supplied? If so, we put it in the new UserProfile.
-            if 'picture' in request.FILES:
-                profile.picture = request.FILES['picture']
-
-            # sve website
-            if website in request.FILES:
-                profile.website = request.FILES['website']
-
-            # Now we save the model instance!
-            profile.save()
-
-            # We can say registration was successful.
-            registered = True
-
-        # Invalid form(s) - just print errors to the terminal.
-        else:
-            print user_form.errors, profile_form.errors
-
-    # Not a HTTP POST, so we render the two ModelForms to allow a user to input their data.
-    else:
-        user_form = UserForm()
-        profile_form = UserProfileForm()
-
-    context_dict['user_form'] = user_form
-    context_dict['profile_form']= profile_form
-    context_dict['registered'] = registered
-
-    # Render and return!
-    return render(request, 'rango/profile_registration.html', context_dict)
+	context_dict = {}
+	
+	if not request.method == 'POST':
+		context_dict['profile_form'] = UserProfileForm(request.GET)
+		return render(request, 'registration/profile_registration.html', context_dict)
+		
+	profile_form = UserProfileForm(request.POST)
+	user = User.objects.get(id=request.user.id)
+	
+	if profile_form.is_valid():
+		try: # Does a profile exist?
+			profile = UserProfile.objects.get(user=user)
+		except: # No?
+			profile = profile_form.save(commit=False)
+			profile.user = user
+		if 'website' in request.POST and request.POST['website']:
+			profile.website = request.POST['website']
+		if 'picture' in request.FILES and request.FILES.get('picture'):
+			profile.picture = request.FILES.get('picture')
+		profile.save()
+		
+	return render(request, 'rango/index.html', context_dict)
 
 @login_required
 def profile(request):
     #context = RequestContext(request)
     #cat_list = get_category_list()
     context_dict = {}
-    #u = profile.objects.get(username=request.user)
+    user = User.objects.get(id=request.user.id)
     
-    try:
-        up = UserProfile.objects.get
-    except:
-        up = None
+   # try:
+    up = UserProfile.objects.get(user=user)
+    #except:
+     #   up = None
     
-    #context_dict['user'] = u
+    context_dict['user'] = user
     context_dict['userprofile'] = up
     return render(request, 'rango/profile.html', context_dict)
     
