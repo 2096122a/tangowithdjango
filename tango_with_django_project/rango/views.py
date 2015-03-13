@@ -58,14 +58,14 @@ def restricted(request):
 @login_required
 def register_profile(request):
 	context_dict = {}
-	
+
 	if not request.method == 'POST':
 		context_dict['profile_form'] = UserProfileForm(request.GET)
 		return render(request, 'registration/profile_registration.html', context_dict)
-		
+
 	profile_form = UserProfileForm(request.POST)
 	user = User.objects.get(id=request.user.id)
-	
+
 	if profile_form.is_valid():
 		try: # Does a profile exist?
 			profile = UserProfile.objects.get(user=user)
@@ -77,7 +77,7 @@ def register_profile(request):
 		if 'picture' in request.FILES and request.FILES.get('picture'):
 			profile.picture = request.FILES.get('picture')
 		profile.save()
-		
+
 	return render(request, 'rango/index.html', context_dict)
 
 @login_required
@@ -86,17 +86,17 @@ def profile(request):
     #cat_list = get_category_list()
     context_dict = {}
     user = User.objects.get(id=request.user.id)
-    
+
    # try:
     up = UserProfile.objects.get(user=user)
     #except:
      #   up = None
-    
+
     context_dict['user'] = user
     context_dict['userprofile'] = up
     return render(request, 'rango/profile.html', context_dict)
-    
- 
+
+
 
 
 def search(request):
@@ -167,7 +167,10 @@ def category(request, category_name_slug):
     context_dict['result_list'] = None
     context_dict['query'] = None
     if request.method == 'POST':
-        query = request.POST['query'].strip()
+        if "query" in request.POST:
+            query = request.POST['query'].strip()
+        else:
+            query = None
 
         if query:
             # Run our Bing function to get the results list!
@@ -232,7 +235,7 @@ def about(request):
     # Construct a dictionary to pass to the template engine as its context.
     # Note the key boldmessage is the same as {{ boldmessage }} in the template!
 
-   
+
     context_dict = {'boldmessage': "Welcome to the About page"}
 
     # Return a rendered response to send to the client.
